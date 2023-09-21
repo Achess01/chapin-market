@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # TODO: Add local apps
+    'users.apps.UsersConfig',
+    'market.apps.MarketConfig',
 
     # Third party app
     'rest_framework',
@@ -145,8 +147,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# TODO: Add User model
-# AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'users.User'
 
 # Cors
 CORS_ALLOWED_ORIGINS = [
