@@ -54,6 +54,7 @@ class User(MarketBaseModel, AbstractUser):
     is_cashierman = models.BooleanField('cashier status', default=False)
     is_storeman = models.BooleanField('storeman status', default=False)
     is_inventory = models.BooleanField('inventory status', default=False)
+    is_new_user = models.BooleanField('New user status', default=True)
 
     def __str__(self) -> str:
         return f'{self.username} {self.first_name} {self.last_name}'
