@@ -36,23 +36,63 @@ class UserSignUpModelSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(
         validators=[phone_regex_validator()], max_length=17)
 
+    branch = serializers.PrimaryKeyRelatedField(
+        queryset=Branch.objects.all(), write_only=True, required=False)
+
+    cashier = serializers.PrimaryKeyRelatedField(
+        queryset=Cashier.objects.all(), write_only=True, required=False)
+
+    def validate(self, data):
+        is_cashierman = data.get('is_cashierman', False)
+        is_storeman = data.get('is_storeman', False)
+        is_inventory = data.get('is_inventory', False)
+        branch = data.get('branch', None)
+        cashier = data.get('branch', None)
+
+        has_profile = is_cashierman or is_storeman or is_inventory
+        if has_profile and branch is None:
+            raise serializers.ValidationError('Branch not provided')
+
+        if is_cashierman and cashier is None:
+            raise serializers.ValidationError('Cashier not provided')
+
+        return data
+
     class Meta:
         model = User
         fields = [
             'first_name',
-            'second_name',
             'last_name',
-            'last_mother_name',
             'username',
             'phone_number',
+            'dpi',
+            'date_of_birth',
+            'is_admin',
+            'is_cashierman',
+            'is_storeman',
+            'is_inventory'
         ]
 
     def create(self, validated_data):
+        branch = validated_data.get('branch', None)
+        validated_data.pop('branch')
+        cashier = validated_data.get('cashier', None)
+        validated_data.pop('cashier')
+
         password = generate_user_password()
         self.context['raw_password'] = password
         validated_data['password'] = password
         validated_data['is_new_user'] = True
         user = User.objects.create_user(**validated_data)
+        # Create user profiles
+        if user.is_cashierman:
+            CashierStaff.objects.create(
+                user=user, brach=branch, cashier=cashier)
+        elif user.is_storeman:
+            StoreStaff.objects.create(user=user, brach=branch)
+        elif user.is_inventory:
+            InventoryStaff.objects.create(user=user, brach=branch)
+
         return user
 
 
@@ -174,6 +214,7 @@ class UserModelSerializer(serializers.ModelSerializer):
             'last_name',
             'last_mother_name',
             'username',
+            'dpi',
             'phone_number',
             'is_admin',
             'is_cashierman',

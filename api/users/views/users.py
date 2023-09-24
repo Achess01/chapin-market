@@ -11,6 +11,9 @@ from rest_framework.permissions import (
     IsAdminUser,
 )
 
+from users.permissions import (
+    IsMarketAdmin, IsNotSuperObjAdmin)
+
 
 # Models
 from users.models import (
@@ -44,8 +47,11 @@ class UserViewSet(
     def get_permissions(self):
         """ Assign permissions based on action """
         permissions = []
-        if self.action in ['admin', 'reset_password']:
-            permissions += [IsAuthenticated, IsAdminUser]
+        if self.action in ['destroy', 'reset_password']:
+            permissions += [IsAuthenticated, IsAdminUser |
+                            IsMarketAdmin, IsNotSuperObjAdmin]
+        else:
+            permissions += [IsAuthenticated, IsAdminUser | IsMarketAdmin]
 
         return [p() for p in permissions]
 
