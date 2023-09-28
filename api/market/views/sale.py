@@ -4,7 +4,8 @@ from market.models import Sale
 
 # Serializers
 from market.serializers import (
-    SaleModelSerializer
+    SaleModelSerializer,
+    CreateSaleModelSerializer,
 )
 
 # Permissions
@@ -20,7 +21,11 @@ from rest_framework import filters
 class SaleViewSet(viewsets.ModelViewSet):
 
     queryset = Sale.objects.all()
-    serializer_class = SaleModelSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CreateSaleModelSerializer
+        return SaleModelSerializer
 
     # TODO: check permissions
     def get_permissions(self):

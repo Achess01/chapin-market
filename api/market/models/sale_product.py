@@ -14,7 +14,7 @@ class SaleProduct(MarketBaseModel):
         'market.Sale', on_delete=models.CASCADE, related_name='products')
     product = models.ForeignKey(
         'market.Product', on_delete=models.CASCADE, related_name='sales')
-    
+
     @property
     def total(self):
         return self.qty * self.unit_price

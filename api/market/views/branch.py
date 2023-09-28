@@ -1,10 +1,14 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from market.models import Branch
 
 # Serializers
 from market.serializers import (
-    BranchModelSerializer
+    BranchModelSerializer,
+    AddStoreProductsSerializer,
+    AddProductsShelfSerializer,
 )
 
 # Permissions
@@ -37,3 +41,19 @@ class BranchViewSet(viewsets.ModelViewSet):
             permissions += [IsMarketAdmin | IsAdminUser]
 
         return [p() for p in permissions]
+
+    @action(detail=False, methods=['post'])
+    def add_products_store(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = AddStoreProductsSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.save()
+        return Response(data)
+
+    @action(detail=True, methods=['post'])
+    def add_products_shelf(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = AddProductsShelfSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.save()
+        return Response(data)
