@@ -60,6 +60,8 @@ class AddProductsShelfSerializer(serializers.Serializer):
 
     products = ProductShelfModelSerializer(many=True)
 
+    # TODO: Validate products in store
+
     def update(self, instance, validated_data):
         products_updated_created = []
         products = validated_data.get(products, [])
