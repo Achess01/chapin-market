@@ -1,9 +1,14 @@
 import { Form, Field } from "react-final-form";
 import { Button } from "reactstrap";
-
+import { validate, validators, combine } from "validate-redux-form";
 import { SmallContainer } from "src/components/Container";
 import { InputField, InputNumberField } from "src/components/AppInput";
 import logo from "src/assets/logo.png";
+
+const validateForm = (values) => validate(values, {
+  username: validators.exists()("Ingrese su nit"),
+  password: validators.exists()("Ingrese su contraseña")
+})
 
 export const Login = () => {
   const onSubmit = (data) => console.log(data);
@@ -15,20 +20,11 @@ export const Login = () => {
       className="d-flex flex-column justify-content-center align-items-center"
     >
       <SmallContainer>
-        <div className="d-flex flex-column justify-content-center align-items-center pb-4 col-5 mx-auto rounded bg-light">
+        <div className="d-flex flex-column justify-content-center align-items-center pb-4 col-10 col-md-8 col-lg-5 mx-auto rounded bg-light">
           <img src={logo} alt="logo" width="300px" />
           <Form
             onSubmit={onSubmit}
-            validate={(values) => {
-              const errors = {};
-              if (!values.username) {
-                errors.username = "Required";
-              }
-              if (!values.password) {
-                errors.password = "Required";
-              }
-              return errors;
-            }}
+            validate={validateForm}
             render={({ handleSubmit, form, submitting, values }) => (
               <form onSubmit={handleSubmit}>
                 <div className="row mb-3">

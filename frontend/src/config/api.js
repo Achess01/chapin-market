@@ -1,5 +1,4 @@
 import Axios from "axios";
-import Swal from "sweetalert2";
 
 const DOMAIN = "http://localhost:8000";
 export const USERS = "users";
@@ -7,16 +6,7 @@ export const LOGIN = `${USERS}/login`;
 export const INITIAL_PASSWORD = `${USERS}/initial_password`;
 export const RESET_PASSWORD = `reset_password`;
 
-const handleError = (error) => {
-  Swal.fire({
-    title: "Error!",
-    text: error,
-    icon: "error",
-    confirmButtonText: "Cool",
-  });
-};
-
-const getEndpoint = (path) => {
+export const getEndpoint = (path) => {
   return `${DOMAIN}/${path}/`;
 };
 
@@ -30,8 +20,8 @@ export const signUpGeneric = async ({ data, token, path }) => {
     });
     return response.data;
   } catch (error) {
-    handleError(error);
-    return null;
+    console.log(error);
+    throw new Error(error);
   }
 };
 
@@ -45,8 +35,8 @@ export const deleteGeneric = async ({ id, token, path }) => {
     });
     return response.status;
   } catch (error) {
-    handleError(error);
-    return null;
+    console.log(error);
+    throw new Error(error);
   }
 };
 
@@ -60,8 +50,8 @@ export const getAllGeneric = async ({ token, path }) => {
     });
     return response.data;
   } catch (error) {
-    handleError(error);
-    return null;
+    console.log(error);
+    throw new Error(error);
   }
 };
 
@@ -75,8 +65,8 @@ export const updateGeneric = async ({ id, token, data, path }) => {
     });
     return response.data;
   } catch (error) {
-    handleError(error);
-    return null;
+    console.log(error);
+    throw new Error(error);
   }
 };
 
@@ -90,8 +80,8 @@ export const getGeneric = async ({ id, token, path }) => {
     });
     return response.data;
   } catch (error) {
-    handleError(error);
-    return null;
+    console.log(error);
+    throw new Error(error);
   }
 };
 

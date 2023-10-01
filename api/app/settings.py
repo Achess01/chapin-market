@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # TODO: Add local apps
     'users.apps.UsersConfig',
     'market.apps.MarketConfig',
 

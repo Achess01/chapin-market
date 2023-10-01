@@ -1,3 +1,3 @@
-export const SmallContainer = (props) => {
-  return <div className="container-sm">{props.children}</div>;
+export const SmallContainer = ({ children, className }) => {
+  return <div className={`container-sm ${className ? className : ''}`}>{children}</div>;
 };

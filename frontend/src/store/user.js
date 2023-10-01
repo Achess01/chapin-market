@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import Axios from "axios";
-import getEndpoint, { LOGIN } from "../config/api";
+import { LOGIN, getEndpoint } from "src/config/api";
 
 export const login = createAsyncThunk("user/login", async ({ credentials }) => {
   const endpoint = getEndpoint(LOGIN);

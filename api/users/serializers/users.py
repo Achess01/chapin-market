@@ -192,8 +192,9 @@ class UserLoginSerializer(serializers.Serializer):
         )
         if not user:
             raise serializers.ValidationError('Invalid credentials')
-        if user.is_new_user and not user.is_staff:
-            raise serializers.ValidationError('You must change your password')
+        # TODO: Apply this on frontend
+        # if user.is_new_user and not user.is_staff:
+        #     raise serializers.ValidationError('You must change your password')
 
         self.context['user'] = user
         return data
