@@ -9,20 +9,18 @@ import { SmallContainer } from 'src/components/Container';
 
 const validateForm = (values) => validate(values, {
   name: validators.exists()("Ingrese el nombre"),
-  last_name: validators.exists()("Ingrese el nombre"),
-  nit: combine(validators.exists()("Ingrese el nit"), validators.length({ min: 9, max: 9 })("El nit es un numero de 9 dígitos"))
+  address: validators.exists()("Ingrese el nombre"),
 });
 
 export const CreateEdit = () => {
-  const { id } = useParams(); // Get the ID parameter from the URL
+  const { id } = useParams();
   const [initialValues, setInitialValues] = useState({});
 
-  // Fetch data based on ID when in edit mode
+
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        // Fetch your data based on the ID (assuming you have an API)
-        const data = { title: "esto es un titulo", description: "Esta es una descripcion" }
+        const data = { name: "esto es un titulo", address: "Esta es una descripcion" }
         setInitialValues(data);
       }
     };
@@ -31,22 +29,21 @@ export const CreateEdit = () => {
   }, [id]);
 
   const onSubmit = async (values) => {
-    // Handle form submission (create or update) based on whether there is an ID
+
     if (id) {
-      // Update data using the ID
+
       console.log('edit', values);
     } else {
-      // Create new data
+
       console.log('create', values);
     }
 
-    // Handle success or redirection after form submission
+
   };
 
-  // TODO: Agregar tarjeta (card)
   return (
     <SmallContainer className="mt-5 d-flex flex-column align-items-center justify-content-center">
-      <h3 className="mokoto-font">{`${id ? "Editar" : "Crear"} cliente`} </h3>
+      <h3 className="mokoto-font">{`${id ? "Editar" : "Crear"} Sucursal`} </h3>
       <Form
         initialValues={initialValues}
         validate={validateForm}
@@ -60,7 +57,7 @@ export const CreateEdit = () => {
                     name="name"
                     render={InputField}
                     type="text"
-                    placeholder="Alexander"
+                    placeholder="Zona 1"
                     label="Nombre"
                   />
                 </div>
@@ -68,21 +65,11 @@ export const CreateEdit = () => {
               <div className="row mb-3">
                 <div className="col-12">
                   <Field
-                    name="last_name"
-                    render={InputField}
+                    name="address"
                     type="text"
-                    placeholder="Tzoc"
-                    label="Apellido"
-                  />
-                </div>
-              </div>
-              <div className="row mb-3">
-                <div className="col-12">
-                  <Field
-                    name="nit"
                     render={InputField}
-                    placeholder="123456789"
-                    label="Nit"
+                    placeholder="Zona 1, Quetzaltenango, Guatemala"
+                    label="Dirección"
                   />
                 </div>
               </div>

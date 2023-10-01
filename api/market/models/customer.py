@@ -16,4 +16,4 @@ class Customer(MarketBaseModel):
         db_table = '"market"."customer"'
 
     def __str__(self) -> str:
-        return f'{self.name} {self.last_name} Q{self.nit}'
+        return f'{self.name} {self.last_name} {self.nit}'

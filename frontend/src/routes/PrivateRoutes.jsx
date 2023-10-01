@@ -2,30 +2,29 @@ import { Outlet, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { roles } from 'src/utils/constants';
 import { NavBar } from 'src/components/NavBar';
+import { useUser } from 'src/utils/useUser';
 
-const checkRoles = (allow = [], user) => {
+export const checkRoles = (allow = [], user) => {
   return allow.some((role) => {
     const field = roles[role];
-    console.log(field);
     return user[field];
   });
 };
 
 const PrivateRoutes = ({ allow = [] }) => {
-  // const user = useSelector((state) => state.user.user);
-  const user = {
-    token: 'token',
-    is_admin: true,
-  }
+  const user = useUser();
+
+  if (!user || !user.token) return <Navigate to="/login" />
+  if (!checkRoles([1, 2, 3, 4], user)) return <Navigate to="/norole" />
 
   return (
-    user && user.token && checkRoles(allow, user) ? (
+    checkRoles(allow, user) ? (
       <>
         <NavBar />
         <Outlet />
       </>
 
-    ) : <Navigate to="/login" />
+    ) : <Navigate to="/" />
   )
 }
 

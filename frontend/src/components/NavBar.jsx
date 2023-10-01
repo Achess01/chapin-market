@@ -7,8 +7,24 @@ import {
   Nav,
   NavItem,
 } from 'reactstrap';
+import { checkRoles } from 'src/routes/PrivateRoutes';
+import { ADMIN, CASHIER, INVENTORY, STORE } from 'src/utils/constants';
+import { useUser } from 'src/utils/useUser';
+
+
+const ItemList = ({ to, label, allow, user }) => {
+  if (!checkRoles(allow, user)) return null;
+  return (
+    <NavItem>
+      <NavLink to={to} className="link-light mokoto-font">
+        {label}
+      </NavLink>
+    </NavItem>
+  )
+}
 
 export const NavBar = (props) => {
+  const user = useUser();
   const [collapsed, setCollapsed] = useState(true);
 
   const toggleNavbar = () => setCollapsed(!collapsed);
@@ -22,16 +38,9 @@ export const NavBar = (props) => {
         <NavbarToggler onClick={toggleNavbar} className="me-2" />
         <Collapse isOpen={!collapsed} navbar>
           <Nav navbar>
-            <NavItem>
-              <NavLink to="/" className="link-light mokoto-font">
-                Example
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink to="/customers" className="link-light mokoto-font">
-                Customers
-              </NavLink>
-            </NavItem>
+            <ItemList to="/" label="Clientes" allow={[ADMIN, CASHIER]} user={user} />
+            <ItemList to="/products" label="Productos" allow={[ADMIN]} user={user} />
+            <ItemList to="/branches" label="Sucursales" allow={[ADMIN, CASHIER, STORE, INVENTORY]} user={user} />
           </Nav>
         </Collapse>
       </Navbar>

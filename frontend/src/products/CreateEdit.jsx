@@ -9,19 +9,18 @@ import { SmallContainer } from 'src/components/Container';
 
 const validateForm = (values) => validate(values, {
   name: validators.exists()("Ingrese el nombre"),
-  last_name: validators.exists()("Ingrese el nombre"),
-  nit: combine(validators.exists()("Ingrese el nit"), validators.length({ min: 9, max: 9 })("El nit es un numero de 9 dígitos"))
+  barcode: combine(validators.exists()("Ingrese el código"), validators.length({ min: 12, max: 12 })("El nit es un numero de 12 dígitos")),
+  price: validators.exists()("Ingrese el precio"),
 });
 
 export const CreateEdit = () => {
-  const { id } = useParams(); // Get the ID parameter from the URL
+  const { id } = useParams();
   const [initialValues, setInitialValues] = useState({});
 
-  // Fetch data based on ID when in edit mode
+
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        // Fetch your data based on the ID (assuming you have an API)
         const data = { title: "esto es un titulo", description: "Esta es una descripcion" }
         setInitialValues(data);
       }
@@ -31,22 +30,21 @@ export const CreateEdit = () => {
   }, [id]);
 
   const onSubmit = async (values) => {
-    // Handle form submission (create or update) based on whether there is an ID
+
     if (id) {
-      // Update data using the ID
+
       console.log('edit', values);
     } else {
-      // Create new data
+
       console.log('create', values);
     }
 
-    // Handle success or redirection after form submission
+
   };
 
-  // TODO: Agregar tarjeta (card)
   return (
     <SmallContainer className="mt-5 d-flex flex-column align-items-center justify-content-center">
-      <h3 className="mokoto-font">{`${id ? "Editar" : "Crear"} cliente`} </h3>
+      <h3 className="mokoto-font">{`${id ? "Editar" : "Crear"} producto`} </h3>
       <Form
         initialValues={initialValues}
         validate={validateForm}
@@ -60,7 +58,7 @@ export const CreateEdit = () => {
                     name="name"
                     render={InputField}
                     type="text"
-                    placeholder="Alexander"
+                    placeholder="Pasta de dientes "
                     label="Nombre"
                   />
                 </div>
@@ -68,21 +66,25 @@ export const CreateEdit = () => {
               <div className="row mb-3">
                 <div className="col-12">
                   <Field
-                    name="last_name"
-                    render={InputField}
-                    type="text"
-                    placeholder="Tzoc"
-                    label="Apellido"
+                    name="barcode"
+                    render={InputNumberField}
+                    placeholder="000000000000"
+                    label="Código de barras"
+                    allowNegative={false}
+                    allowLeadingZeros={true}
                   />
                 </div>
               </div>
               <div className="row mb-3">
                 <div className="col-12">
                   <Field
-                    name="nit"
-                    render={InputField}
-                    placeholder="123456789"
-                    label="Nit"
+                    name="price"
+                    render={InputNumberField}
+                    decimalScale={2}
+                    placeholder="Q10.00"
+                    label="Precio"
+                    prefix="Q"
+                    allowNegative={false}
                   />
                 </div>
               </div>

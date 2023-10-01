@@ -41,6 +41,7 @@ export const InputNumberField = ({
   label,
   thousandSeparator = "",
   allowNegative = true,
+  allowLeadingZeros = false
 }) => {
   const invalid = touched && error;
 
@@ -68,6 +69,7 @@ export const InputNumberField = ({
         }}
         readOnly={readOnly}
         allowNegative={allowNegative}
+        allowLeadingZeros={allowLeadingZeros}
       />
       {invalid && <div className="invalid-feedback">{error}</div>}
     </div>
