@@ -7,5 +7,7 @@ export const useUser = () => {
     is_admin: true,
   };
 
+  if (!user) return {};
+
   return user;
 };

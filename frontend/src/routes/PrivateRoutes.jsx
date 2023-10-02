@@ -5,6 +5,7 @@ import { NavBar } from 'src/components/NavBar';
 import { useUser } from 'src/utils/useUser';
 
 export const checkRoles = (allow = [], user) => {
+  if(!user) return false;
   return allow.some((role) => {
     const field = roles[role];
     return user[field];

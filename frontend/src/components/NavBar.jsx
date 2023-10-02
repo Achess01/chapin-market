@@ -10,6 +10,7 @@ import {
 import { checkRoles } from 'src/routes/PrivateRoutes';
 import { ADMIN, CASHIER, INVENTORY, STORE } from 'src/utils/constants';
 import { useUser } from 'src/utils/useUser';
+import { LogOutButton } from 'src/users/Logout';
 
 
 const ItemList = ({ to, label, allow, user }) => {
@@ -38,9 +39,14 @@ export const NavBar = (props) => {
         <NavbarToggler onClick={toggleNavbar} className="me-2" />
         <Collapse isOpen={!collapsed} navbar>
           <Nav navbar>
-            <ItemList to="/" label="Clientes" allow={[ADMIN, CASHIER]} user={user} />
+            <ItemList to="/customers" label="Clientes" allow={[ADMIN, CASHIER]} user={user} />
             <ItemList to="/products" label="Productos" allow={[ADMIN]} user={user} />
             <ItemList to="/branches" label="Sucursales" allow={[ADMIN, CASHIER, STORE, INVENTORY]} user={user} />
+            <ItemList to="/users" label="Usuarios" allow={[ADMIN]} user={user} />
+            <ItemList to="/cashiers" label="Cajas" allow={[ADMIN]} user={user} />
+            <NavItem>
+              <LogOutButton />
+            </NavItem>
           </Nav>
         </Collapse>
       </Navbar>

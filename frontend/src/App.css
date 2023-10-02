@@ -1,0 +1,8 @@
+.branch-cards {
+  color: black;
+}
+
+.branch-cards:hover {
+  background-color: black;
+  color: white;
+}
