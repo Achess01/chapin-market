@@ -10,6 +10,7 @@ export const InputField = ({
   placeholder = "...",
   label = "",
   labelClassNames = "",
+  readOnly = false,
 }) => (
   <div className="form-group">
     <label
@@ -23,6 +24,7 @@ export const InputField = ({
       type={type}
       placeholder={placeholder}
       className={classNames("form-control", { "is-invalid": touched && error })}
+      readOnly={readOnly}
       {...input}
     />
     {error && touched && <span className="invalid-feedback">{error}</span>}
@@ -86,8 +88,7 @@ export const InputSelect = (
     isMulti,
     isSearchable,
     options = [],
-    extra_change,
-    extraChange,
+    extraChange = null,
     select_style = {},
     placeholder,
     labelKey = "label",
@@ -127,7 +128,7 @@ export const InputSelect = (
         options={_options}
         placeholder={placeholder}
         onChange={(e) => {
-          if (extra_change) {
+          if (extraChange) {
             extraChange(e[valueKey])
           }
           input.onChange(e ? e[valueKey] : null);

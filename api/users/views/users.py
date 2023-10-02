@@ -42,12 +42,13 @@ class UserViewSet(
 ):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserModelSerializer
-    lookup_field = 'username'
 
     def get_permissions(self):
         """ Assign permissions based on action """
         permissions = []
-        if self.action in ['destroy', 'reset_password']:
+        if self.action in ['login', 'initial_password']:
+            permissions = []
+        elif self.action in ['destroy', 'reset_password']:
             permissions += [IsAuthenticated, IsAdminUser |
                             IsMarketAdmin, IsNotSuperObjAdmin]
         else:

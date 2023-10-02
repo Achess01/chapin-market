@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from market.models import Sale
 
@@ -27,17 +29,20 @@ class SaleViewSet(viewsets.ModelViewSet):
             return CreateSaleModelSerializer
         return SaleModelSerializer
 
-    # TODO: check permissions
     def get_permissions(self):
         permissions = [IsAuthenticated]
         if self.action in ['retrieve', 'list']:
             permissions += [IsCashierStaff | IsInventoryStaff |
                             IsStoreStaff | IsMarketAdmin | IsAdminUser]
 
-        elif self.action in ['update', 'partial_update', 'destroy']:
-            permissions += [IsMarketAdmin | IsAdminUser]
-
-        elif self.action in ['create']:
-            permissions += [IsMarketAdmin | IsAdminUser]
+        elif self.action in ['update', 'partial_update', 'destroy', 'create', 'top']:
+            permissions += [IsMarketAdmin | IsAdminUser | IsCashierStaff]
 
         return [p() for p in permissions]
+
+    @action(detail=False, methods=['get'])
+    def top(self, request, *args, **kwargs):
+        queryset = self.get_queryset().order_by('-total')[:10]
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

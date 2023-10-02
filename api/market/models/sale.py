@@ -13,15 +13,15 @@ def increment_invoice_number():
     invoice_no = last_invoice.invoice_no
     invoice_int = int(invoice_no.split('CH')[-1])
     new_invoice_int = invoice_int + 1
-    new_invoice_no = 'MAG' + str(new_invoice_int).zfill(4)
+    new_invoice_no = 'CH' + str(new_invoice_int).zfill(4)
     return new_invoice_no
 
 
 class Sale(MarketBaseModel):
     invoice_no = models.CharField(
         max_length=255, unique=True, default=increment_invoice_number)
-    customer_nit = models.CharField(
-        validators=[nit_regex_validator()], max_length=9, unique=True)
+    nit = models.CharField(
+        validators=[nit_regex_validator()], max_length=9, default='000000000')
     customer_name = models.CharField(max_length=70)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -39,4 +39,4 @@ class Sale(MarketBaseModel):
         db_table = '"market"."sale"'
 
     def __str__(self) -> str:
-        return f'{self.invoice_no} {self.customer_nit} {self.customer_name} Q{self.total}'
+        return f'{self.invoice_no} {self.nit} {self.customer_name} Q{self.total}'

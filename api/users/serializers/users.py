@@ -1,5 +1,6 @@
 # Django
 from django.contrib.auth import authenticate, password_validation
+from django.core.exceptions import ObjectDoesNotExist
 
 # Django REST Framework
 from rest_framework import serializers
@@ -19,6 +20,9 @@ from market.models import (
     Cashier,
 )
 
+# Serializers
+from market.serializers import BranchModelSerializer
+
 # Utils
 from utils.validators import nit_regex_validator, phone_regex_validator
 from utils.generate_password import generate_user_password
@@ -33,9 +37,6 @@ class UserSignUpModelSerializer(serializers.ModelSerializer):
         ]
     )
 
-    phone_number = serializers.CharField(
-        validators=[phone_regex_validator()], max_length=17)
-
     branch = serializers.PrimaryKeyRelatedField(
         queryset=Branch.objects.all(), write_only=True, required=False)
 
@@ -47,9 +48,9 @@ class UserSignUpModelSerializer(serializers.ModelSerializer):
         is_storeman = data.get('is_storeman', False)
         is_inventory = data.get('is_inventory', False)
         branch = data.get('branch', None)
-        cashier = data.get('branch', None)
+        cashier = data.get('cashier', None)
 
-        has_profile = is_cashierman or is_storeman or is_inventory
+        has_profile = is_storeman or is_inventory
         if has_profile and branch is None:
             raise serializers.ValidationError('Branch not provided')
 
@@ -64,20 +65,23 @@ class UserSignUpModelSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'username',
-            'phone_number',
             'dpi',
             'date_of_birth',
             'is_admin',
             'is_cashierman',
             'is_storeman',
-            'is_inventory'
+            'is_inventory',
+            'branch',
+            'cashier'
         ]
 
     def create(self, validated_data):
         branch = validated_data.get('branch', None)
-        validated_data.pop('branch')
+        if branch is not None:
+            validated_data.pop('branch')
         cashier = validated_data.get('cashier', None)
-        validated_data.pop('cashier')
+        if cashier is not None:
+            validated_data.pop('cashier')
 
         password = generate_user_password()
         self.context['raw_password'] = password
@@ -87,11 +91,11 @@ class UserSignUpModelSerializer(serializers.ModelSerializer):
         # Create user profiles
         if user.is_cashierman:
             CashierStaff.objects.create(
-                user=user, brach=branch, cashier=cashier)
+                user=user, branch=cashier.branch, cashier=cashier)
         elif user.is_storeman:
-            StoreStaff.objects.create(user=user, brach=branch)
+            StoreStaff.objects.create(user=user, branch=branch)
         elif user.is_inventory:
-            InventoryStaff.objects.create(user=user, brach=branch)
+            InventoryStaff.objects.create(user=user, branch=branch)
 
         return user
 
@@ -100,18 +104,21 @@ class CashierStaffModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CashierStaff
+        fields = '__all__'
 
 
 class InventoryStaffModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InventoryStaff
+        fields = '__all__'
 
 
 class StoreStaffModelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StoreStaff
+        fields = '__all__'
 
 
 class InitialPasswordSerializer(serializers.Serializer):
@@ -206,6 +213,49 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserModelSerializer(serializers.ModelSerializer):
     """ User model serializer """
+
+    branch = serializers.SerializerMethodField(read_only=True)
+    profile = serializers.SerializerMethodField(read_only=True)
+
+    def get_branch(self, user):
+        try:
+            branch = None
+            if user.is_cashierman and user.cashier_profile is not None:
+                branch = user.cashier_profile.branch
+            elif user.is_inventory and user.inventory_profile is not None:
+                branch = user.inventory_profile.branch
+            elif user.is_storeman and user.store_profile is not None:
+                branch = user.store_profile.branch
+
+            if branch is None:
+                return branch
+
+            return BranchModelSerializer(branch).data
+        except ObjectDoesNotExist:
+            return None
+
+    def get_profile(self, user):
+        profile = None
+        serializer = None
+        try:
+            profile = None
+            if user.is_cashierman and user.cashier_profile is not None:
+                profile = user.cashier_profile
+                serializer = CashierStaffModelSerializer
+            elif user.is_inventory and user.inventory_profile is not None:
+                profile = user.inventory_profile
+                serializer = InventoryStaffModelSerializer
+            elif user.is_storeman and user.store_profile is not None:
+                profile = user.store_profile
+                serializer = StoreStaffModelSerializer
+
+            if profile is None or serializer is None:
+                return None
+
+            return serializer(profile).data
+        except ObjectDoesNotExist:
+            return None
+
     class Meta:
         model = User
         fields = [
@@ -216,12 +266,15 @@ class UserModelSerializer(serializers.ModelSerializer):
             'last_mother_name',
             'username',
             'dpi',
+            'date_of_birth',
             'phone_number',
             'is_admin',
             'is_cashierman',
             'is_storeman',
             'is_inventory',
             'is_staff',
+            'branch',
+            'profile',
         ]
 
         read_only_fields = [
@@ -230,4 +283,6 @@ class UserModelSerializer(serializers.ModelSerializer):
             'is_storeman',
             'is_inventory',
             'is_staff',
+            'branch',
+            'profile',
         ]

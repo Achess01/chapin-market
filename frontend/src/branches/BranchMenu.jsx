@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { SmallContainer } from "src/components/Container";
 import { useUser } from "src/utils/useUser";
-import { checkRoles } from "src/routes/PrivateRoutes";
-import { ADMIN, CASHIER, INVENTORY, STORE } from "src/utils/constants";
+import { checkRoles } from "src/utils/constants";
+import { ADMIN, STAFF, INVENTORY, STORE } from "src/utils/constants";
+import { getBranch } from "src/config/api";
 
 export const BranchMenu = () => {
   const user = useUser();
@@ -15,25 +16,30 @@ export const BranchMenu = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const data = { id: 1, name: "Zona 1", address: "Zona 1, Quetzaltenango, Guatemala" }
-        setBranch(data);
+        try {
+          const response = await getBranch({ id, token: user.token })
+          setBranch(response);
+        } catch (error) {
+          setBranch({});
+        }
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
   return (
     <SmallContainer className="d-flex align-items-center justify-content-center flex-column" loading={loading}>
       <div className="mt-5 card w-50 mx-auto py-3 mb-5 shadow">
         <div className="d-flex flex-column align-items-center justify-content-center">
           <h4 className="mokoto-font mb-1">
-            <Link to={`/branches/${branch.id}/edit`} className="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">{branch.name} <i className="bi bi-pen-fill" /></Link>
+            {branch.name}
+            {checkRoles([STAFF, ADMIN], user) ? <Link to={`/branches/${branch.id}/edit`} className="link-dark link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover"> <i className="bi bi-pen-fill" /></Link> : null}
           </h4>
           <small>{branch.address}</small>
         </div>
       </div>
       <div className="d-flex align-items-center justify-content-center w-50 flex-column">
-        {checkRoles([ADMIN, STORE], user) ? (
+        {checkRoles([STAFF, ADMIN, STORE], user) ? (
           <div
             className="col-6 px-md-3"
           >
@@ -50,7 +56,7 @@ export const BranchMenu = () => {
         ) : null
         }
 
-        {checkRoles([ADMIN, INVENTORY], user) ? (
+        {checkRoles([ADMIN, STAFF, INVENTORY], user) ? (
           <div
             className="col-6 px-md-3"
           >

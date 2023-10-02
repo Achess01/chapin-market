@@ -1,44 +1,81 @@
 import { useState, useEffect } from 'react';
 import { Form, Field } from 'react-final-form';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from 'reactstrap';
-import { validate, validators, combine } from 'validate-redux-form';
-import { InputField, InputNumberField } from 'src/components/AppInput';
+import { validate, validators } from 'validate-redux-form';
+import { InputField } from 'src/components/AppInput';
 import { SmallContainer } from 'src/components/Container';
-
+import { useUser } from 'src/utils/useUser';
+import { getBranch, updateBranch, createBranch } from 'src/config/api';
+import Swal from 'sweetalert2';
 
 const validateForm = (values) => validate(values, {
   name: validators.exists()("Ingrese el nombre"),
-  address: validators.exists()("Ingrese el nombre"),
+  address: validators.length({ min: 5, max: 20 })("Dirección entre 5 y 20 caracteres"),
 });
 
 export const CreateEdit = () => {
-  const { id } = useParams();
+  const navigate = useNavigate();
+  const user = useUser();
+  const { id } = useParams(); // Get the ID parameter from the URL
   const [initialValues, setInitialValues] = useState({});
-
 
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const data = { name: "esto es un titulo", address: "Esta es una descripcion" }
-        setInitialValues(data);
+        try {
+          const data = await getBranch({ id, token: user.token })
+          setInitialValues(data);
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error,
+          });
+          setInitialValues({});
+        }
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
-  const onSubmit = async (values) => {
-
+  const onSubmit = async (data) => {
     if (id) {
-
-      console.log('edit', values);
+      try {
+        await updateBranch({ id, token: user.token, data })
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/branches')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     } else {
-
-      console.log('create', values);
+      try {
+        await createBranch({ token: user.token, data });
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/branches')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     }
-
-
   };
 
   return (

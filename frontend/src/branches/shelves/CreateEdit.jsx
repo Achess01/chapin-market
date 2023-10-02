@@ -2,29 +2,68 @@ import { useState, useEffect, Fragment } from 'react';
 import { Form, Field } from 'react-final-form';
 import { Button } from 'reactstrap';
 import { validate, validators } from 'validate-redux-form';
+import { useNavigate, useParams } from 'react-router';
+import Swal from 'sweetalert2';
 import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
 import { SmallContainer } from 'src/components/Container';
 import { InputNumberField, InputSelect } from 'src/components/AppInput';
+import { useUser } from 'src/utils/useUser';
+import { createProductsShelves, getProductsStore } from 'src/config/api';
 
+
+const validateForm = (values) => {
+  return validate(values, {
+    products: [{
+      product: validators.exists()('Agregue un producto'),
+      qty: validators.number({ min: 1 })('Al menos una unidad'),
+      hallway: validators.number({ min: 1 })('Los pasillos deben de ser positivos'),
+    }]
+
+  });
+};
 
 export const CreateEdit = () => {
-  const [products, setProducts] = useState([{ id: 1, qty: 20, value: 1, label: 'tortrix' }, { id: 2, qty: 25, value: 2, label: 'tortrix2' }]);
+  const user = useUser();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [products, setProducts] = useState([]);
 
-  const onSubmit = async (values) => {
-    console.log('create', values);
+  const onSubmit = async (data) => {
+    if (id) {
+      try {
+        await createProductsShelves({ data, token: user.token, id });
+        navigate(`/branches/${id}/products-shelves`);
+        Swal.fire({
+          icon: 'success',
+          title: 'Productos agregados',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (error) {
+        console.log(error);
+        const response = error.response && error.response.data && error.response.data.products ? error.response.data.products : {}
+        const errorMessage = response[0] || '';
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: errorMessage ? errorMessage : error,
+        });
+      }
+    }
   };
 
-
-  const validateForm = (values) => {
-    return validate(values, {
-      products: [{
-        product: validators.exists()('Agregue un producto'),
-        qty: validators.number({ min: 1 })('Al menos una unidad')
-      }]
-
-    });
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getProductsStore({ token: user.token, id });
+        setProducts(response);
+      } catch (error) {
+        setProducts([]);
+      }
+    }
+    fetchData();
+  }, [user, id]);
 
   return (
     <SmallContainer className="mt-5 d-flex flex-column align-items-center justify-content-center">
@@ -57,6 +96,8 @@ export const CreateEdit = () => {
                               placeholder="Producto"
                               label="Producto"
                               options={products}
+                              labelKey="product_name"
+                              valueKey="product"
                             />
                           </div>
                           <div className="col-4">

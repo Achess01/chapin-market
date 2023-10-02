@@ -1,36 +1,50 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router';
+import Swal from 'sweetalert2';
 import { SmallContainer } from 'src/components/Container';
 import PaginatedTable from 'src/components/PaginatedTable';
+import { useUser } from 'src/utils/useUser';
+import { getBranch, getProductsStore } from 'src/config/api';
 
 export const Products = () => {
+  const user = useUser();
   const { id } = useParams();
   const [branch, setBranch] = useState({});
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
 
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const data = { id: 1, name: "Zona 1", address: "Zona 1, Quetzaltenango, Guatemala" }
-        setBranch(data);
+        try {
+          setLoading(true);
+          const response = await getBranch({ id, token: user.token });
+          const dataResponse = await getProductsStore({ token: user.token, id });
+          setBranch(response);
+          setData(dataResponse);
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error,
+          });
+
+        } finally {
+          setLoading(false);
+        }
       }
-    };
 
+    }
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
-  const data = [
-    { id: 1, name: 'John', age: 25 },
-    { id: 2, name: 'Jane', age: 30 },
-    // Add more data based on your models
-  ];
 
   const fields = [
     { label: 'ID', key: 'id' },
-    { label: 'Name', key: 'name' },
-    { label: 'Age', key: 'age' },
+    { label: 'Nombre', key: 'product_name' },
+    { label: 'Cantidad', key: 'qty' },
   ];
 
   return (
@@ -40,7 +54,7 @@ export const Products = () => {
         <Link to={`/branches/${id}/products/new`} className="btn btn-dark my-3">
           <i className="bi bi-plus-circle-fill" />
         </Link>
-        <PaginatedTable data={data} itemsPerPage={5} fields={fields} />
+        <PaginatedTable data={data} fields={fields} />
       </div>
     </SmallContainer>
   );

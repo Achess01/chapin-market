@@ -9,6 +9,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5440:5432
   web:
     build: api
     command: python manage.py runserver 0.0.0.0:8000
@@ -28,7 +30,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - 5173:80
+      - 4173:80
     volumes:
       - ./frontend:/app
     environment:

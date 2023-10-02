@@ -22,17 +22,13 @@ class CashierViewSet(viewsets.ModelViewSet):
     queryset = Cashier.objects.all()
     serializer_class = CashierModelSerializer
 
-    # TODO: check permissions
     def get_permissions(self):
         permissions = [IsAuthenticated]
         if self.action in ['retrieve', 'list']:
             permissions += [IsCashierStaff | IsInventoryStaff |
                             IsStoreStaff | IsMarketAdmin | IsAdminUser]
 
-        elif self.action in ['update', 'partial_update', 'destroy']:
-            permissions += [IsMarketAdmin | IsAdminUser]
-
-        elif self.action in ['create']:
+        elif self.action in ['update', 'partial_update', 'destroy', 'create']:
             permissions += [IsMarketAdmin | IsAdminUser]
 
         return [p() for p in permissions]

@@ -12,6 +12,7 @@ class Cashier(MarketBaseModel):
 
     class Meta:
         db_table = '"market"."cashier"'
+        unique_together = (("number", "branch"))
 
     def __str__(self) -> str:
         return f'{self.number} - {self.branch}'

@@ -1,46 +1,98 @@
 import { useState, useEffect } from 'react';
 import { Form, Field } from 'react-final-form';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from 'reactstrap';
+import Swal from 'sweetalert2';
 import { validate, validators, combine } from 'validate-redux-form';
 import { InputSelect, InputNumberField } from 'src/components/AppInput';
 import { SmallContainer } from 'src/components/Container';
+import { getCashier, updateCashier, createCashier, getBranches } from 'src/config/api';
+import { useUser } from 'src/utils/useUser';
 
 
 const validateForm = (values) => validate(values, {
-  name: validators.exists()("Ingrese el nombre"),
-  barcode: combine(validators.exists()("Ingrese el código"), validators.length({ min: 12, max: 12 })("El nit es un numero de 12 dígitos")),
-  price: validators.exists()("Ingrese el precio"),
+  branch: validators.exists()("Campo requerido"),
+  number: validators.exists()("Campo requerido"),
 });
 
 export const CreateEdit = () => {
-  const { id } = useParams();
-  const [branches, setBranches] = useState([]);
+  const navigate = useNavigate();
+  const user = useUser();
+  const { id } = useParams(); // Get the ID parameter from the URL
   const [initialValues, setInitialValues] = useState({});
+
+  const [branches, setBranches] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responseBranches = await getBranches(user.token);
+        setBranches(responseBranches);
+      } catch (error) {
+        setBranches([]);
+      }
+    }
+
+    fetchData();
+  }, [user]);
 
 
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const data = { title: "esto es un titulo", description: "Esta es una descripcion" }
-        setInitialValues(data);
+        try {
+          const data = await getCashier({ id, token: user.token })
+          setInitialValues(data);
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error,
+          });
+          setInitialValues({});
+        }
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
-  const onSubmit = async (values) => {
-
+  const onSubmit = async (data) => {
     if (id) {
-
-      console.log('edit', values);
+      try {
+        await updateCashier({ id, token: user.token, data })
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/cashiers')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     } else {
-
-      console.log('create', values);
+      try {
+        await createCashier({ token: user.token, data });
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/cashiers')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     }
-
-
   };
 
   return (
@@ -61,6 +113,8 @@ export const CreateEdit = () => {
                     placeholder="Sucursal"
                     label="Sucursal"
                     options={branches}
+                    labelKey="name"
+                    valueKey="id"
                   />
                 </div>
               </div>
