@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Form, Field } from 'react-final-form';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from 'reactstrap';
 import { validate, validators, combine } from 'validate-redux-form';
+import Swal from 'sweetalert2';
 import { InputField, InputNumberField, InputSelect } from 'src/components/AppInput';
 import { SmallContainer } from 'src/components/Container';
 import { ADMIN, STORE, INVENTORY, CASHIER } from 'src/utils/constants';
+import { useUser } from 'src/utils/useUser';
+import { getUser, updateUser, signUpUser, getBranches, getCashiers } from 'src/config/api';
 
 
 const validateForm = (values) => validate(values, {
@@ -16,36 +19,90 @@ const validateForm = (values) => validate(values, {
   date_of_birth: validators.exists()("Ingrese la fecha de nacimiento"),
   role: validators.exists()("Ingrese el nombre"),
   cashier: values && values.role === CASHIER ? validators.exists()("Campo requerido") : null,
+  branch: values && values.role !== CASHIER ? validators.exists()("Campo requerido") : null,
 });
 
 export const CreateEdit = () => {
-  const { id } = useParams();
+  const navigate = useNavigate();
+  const user = useUser();
+  const { id } = useParams(); // Get the ID parameter from the URL
   const [initialValues, setInitialValues] = useState({});
+
+  const [branches, setBranches] = useState([]);
   const [cashiers, setCashiers] = useState([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responseBranches = await getBranches(user.token);
+        const responseCashiers = await getCashiers(user.token);
+        setBranches(responseBranches);
+        setCashiers(responseCashiers);
+      } catch (error) {
+        setBranches([]);
+        setCashiers([]);
+      }
+    }
+
+    fetchData();
+  }, [user]);
 
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const data = { title: "esto es un titulo", description: "Esta es una descripcion" }
-        setInitialValues(data);
+        try {
+          const data = await getUser({ id, token: user.token })
+          setInitialValues(data);
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error,
+          });
+          setInitialValues({});
+        }
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
-  const onSubmit = async (values) => {
-
+  const onSubmit = async (data) => {
     if (id) {
-
-      console.log('edit', values);
+      try {
+        await updateUser({ id, token: user.token, data })
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/users')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     } else {
-
-      console.log('create', values);
+      try {
+        await signUpUser({ token: user.token, data });
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/users')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     }
-
-
   };
 
   return (
@@ -137,7 +194,19 @@ export const CreateEdit = () => {
                     />
                   </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="row mb-3">
+                  <div className="col-12">
+                    <Field
+                      name="branch"
+                      render={InputSelect}
+                      placeholder="Sucursal"
+                      label="Sucursal"
+                      options={branches}
+                    />
+                  </div>
+                </div>
+              )}
 
 
               <div className="d-flex align-items-center justify-content-center mokoto-font">

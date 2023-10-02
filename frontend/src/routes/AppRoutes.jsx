@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { ADMIN, CASHIER, INVENTORY, STORE } from "src/utils/constants";
 // Components
 import PrivateRoutes from "./PrivateRoutes";
@@ -8,6 +8,7 @@ import { Customers, CreateEdit as CreateEditCustomers } from "src/customers";
 import { Products, CreateEdit as CreateEditProducts } from "src/products";
 import { Branches, CreateEdit as CreateEditBranches, BranchMenu, CreateEditProductsBranch, ProductsBranch, ProductShelves, CreateEditProductsShelves } from "src/branches";
 import { Cashier, CreateEditCashier } from "src/cashiers";
+import { useUser } from "src/utils/useUser";
 
 const NoRoleUser = () => {
   return (
@@ -19,6 +20,7 @@ const NoRoleUser = () => {
 };
 
 export const AppRoutes = () => {
+  const user = useUser();
   return (
     <Routes>
       <Route element={<PrivateRoutes allow={[ADMIN]} />}>
@@ -36,6 +38,7 @@ export const AppRoutes = () => {
         <Route element={<Home />} path="/" exact />
         <Route element={<Branches />} path="/branches" exact />
         <Route element={<BranchMenu />} path="/branches/:id" exact />
+        <Route element={<CreateEditBranches />} path="/branches/new" exact />
         <Route element={<CreateEditBranches />} path="/branches/:id/edit" exact />
       </Route>
       <Route element={<PrivateRoutes allow={[ADMIN, STORE]} />}>
@@ -52,7 +55,7 @@ export const AppRoutes = () => {
         <Route element={<CreateEditCustomers />} path="/customers/new" exact />
         <Route element={<CreateEditCustomers />} path="/customers/:id" exact />
       </Route>
-      <Route element={<Login />} path="/login" exact />
+      <Route element={user && user.token ? <Navigate to="/" /> : <Login />} path="/login" exact />
     </Routes >
   )
 }

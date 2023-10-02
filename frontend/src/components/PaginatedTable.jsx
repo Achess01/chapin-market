@@ -2,13 +2,9 @@
 import React, { useState } from 'react';
 import { Table, Pagination, PaginationItem, PaginationLink, Button } from 'reactstrap';
 
-const PaginatedTable = ({ data, fields, totalPages = 1, actions = false, onEdit = null, onDelete = null }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+const PaginatedTable = ({ data, fields, actions = false, onEdit = null, onDelete = null }) => {
 
-  const handlePageClick = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
+  const results = data || [];
   return (
     <div>
       <Table>
@@ -20,7 +16,7 @@ const PaginatedTable = ({ data, fields, totalPages = 1, actions = false, onEdit 
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
+          {results ? results.map((item, index) => (
             <tr key={index}>
               {fields.map((field, index) => (
                 <td key={index}>{item[field.key]}</td>
@@ -45,27 +41,9 @@ const PaginatedTable = ({ data, fields, totalPages = 1, actions = false, onEdit 
               ) : null}
 
             </tr>
-          ))}
+          )) : null}
         </tbody>
       </Table>
-
-      <Pagination>
-        <PaginationItem disabled={currentPage === 1}>
-          <PaginationLink previous onClick={() => handlePageClick(currentPage - 1)} />
-        </PaginationItem>
-
-        {[...Array(totalPages)].map((_, index) => (
-          <PaginationItem key={index} active={index + 1 === currentPage}>
-            <PaginationLink onClick={() => handlePageClick(index + 1)}>
-              {index + 1}
-            </PaginationLink>
-          </PaginationItem>
-        ))}
-
-        <PaginationItem disabled={currentPage === totalPages}>
-          <PaginationLink next onClick={() => handlePageClick(currentPage + 1)} />
-        </PaginationItem>
-      </Pagination>
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Form, Field } from 'react-final-form';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from 'reactstrap';
+import Swal from 'sweetalert2';
 import { validate, validators, combine } from 'validate-redux-form';
 import { InputField, InputNumberField } from 'src/components/AppInput';
 import { SmallContainer } from 'src/components/Container';
+import { getCustomer, createCustomer, updateCustomer } from 'src/config/api';
+import { useUser } from 'src/utils/useUser';
 
 
 const validateForm = (values) => validate(values, {
@@ -14,6 +17,8 @@ const validateForm = (values) => validate(values, {
 });
 
 export const CreateEdit = () => {
+  const navigate = useNavigate();
+  const user = useUser();
   const { id } = useParams(); // Get the ID parameter from the URL
   const [initialValues, setInitialValues] = useState({});
 
@@ -21,26 +26,60 @@ export const CreateEdit = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        // Fetch your data based on the ID (assuming you have an API)
-        const data = { title: "esto es un titulo", description: "Esta es una descripcion" }
-        setInitialValues(data);
+        try {
+          // Fetch your data based on the ID (assuming you have an API)
+          const data = await getCustomer({ id, token: user.token })
+          setInitialValues(data);
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error,
+          });
+          setInitialValues({});
+        }
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
-  const onSubmit = async (values) => {
-    // Handle form submission (create or update) based on whether there is an ID
+  const onSubmit = async (data) => {
     if (id) {
-      // Update data using the ID
-      console.log('edit', values);
+      try {
+        await updateCustomer({ id, token: user.token, data })
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/customers')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     } else {
-      // Create new data
-      console.log('create', values);
+      try {
+        await createCustomer({ token: user.token, data });
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/customers')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     }
-
-    // Handle success or redirection after form submission
   };
 
   // TODO: Agregar tarjeta (card)

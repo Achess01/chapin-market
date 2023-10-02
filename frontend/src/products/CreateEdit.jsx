@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Form, Field } from 'react-final-form';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { Button } from 'reactstrap';
 import { validate, validators, combine } from 'validate-redux-form';
 import { InputField, InputNumberField } from 'src/components/AppInput';
 import { SmallContainer } from 'src/components/Container';
+import { useUser } from 'src/utils/useUser';
+import { getProduct, updateProduct, createProduct } from 'src/config/api';
 
 
 const validateForm = (values) => validate(values, {
@@ -14,32 +17,67 @@ const validateForm = (values) => validate(values, {
 });
 
 export const CreateEdit = () => {
-  const { id } = useParams();
+  const navigate = useNavigate();
+  const user = useUser();
+  const { id } = useParams(); // Get the ID parameter from the URL
   const [initialValues, setInitialValues] = useState({});
-
 
   useEffect(() => {
     const fetchData = async () => {
       if (id) {
-        const data = { title: "esto es un titulo", description: "Esta es una descripcion" }
-        setInitialValues(data);
+        try {
+          const data = await getProduct({ id, token: user.token })
+          setInitialValues(data);
+        } catch (error) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: error,
+          });
+          setInitialValues({});
+        }
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
-  const onSubmit = async (values) => {
-
+  const onSubmit = async (data) => {
     if (id) {
-
-      console.log('edit', values);
+      try {
+        await updateProduct({ id, token: user.token, data })
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/products')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     } else {
-
-      console.log('create', values);
+      try {
+        await createProduct({ token: user.token, data });
+        Swal.fire({
+          icon: 'success',
+          title: 'Guardado con éxito',
+          showConfirmButton: false,
+          timer: 1500
+        })
+        navigate('/products')
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: error,
+        });
+      }
     }
-
-
   };
 
   return (

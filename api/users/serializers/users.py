@@ -47,7 +47,7 @@ class UserSignUpModelSerializer(serializers.ModelSerializer):
         is_storeman = data.get('is_storeman', False)
         is_inventory = data.get('is_inventory', False)
         branch = data.get('branch', None)
-        cashier = data.get('branch', None)
+        cashier = data.get('cashier', None)
 
         has_profile = is_cashierman or is_storeman or is_inventory
         if has_profile and branch is None:
